@@ -3,62 +3,137 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Repositories\Interface\EmployeeRepositoryInterface;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $employeeRepository;
+
+    public function __construct(EmployeeRepositoryInterface $employeeRepository)
     {
-        //
+        $this->employeeRepository = $employeeRepository;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // ✅ CREATE
+    public function createEmployee(Request $request)
     {
-        //
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'name'       => 'required|string',
+                'email'      => 'required|email',
+                'phone'      => 'required|string',
+                'age'        => 'required|integer|min:18',
+                'created_by' => 'required|integer|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                $output = [
+                    'success' => false,
+                    'message' => "Validation failed.",
+                    'data'    => $validator->errors()->first(),
+                ];
+            } else {
+
+                $data = $request->all();
+                $out_data = $this->employeeRepository->createEmployee($data);
+
+                $output = [
+                    'success' => $out_data['success'],
+                    'message' => $out_data['message'],
+                    'data'    => $out_data['data'],
+                ];
+            }
+
+        } catch (\Exception $e) {
+
+            $output = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+        }
+
+        return response()->json([
+            'success' => $output['success'],
+            'message' => $output['message'],
+            'output'  => $output['data'],
+        ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    // ✅ GET ALL
+    public function getAllEmployees()
     {
-        //
+        $response = $this->employeeRepository->getAllEmployees();
+
+        return response()->json([
+            'success' => $response['success'],
+            'message' => $response['message'],
+            'output'  => $response['data'],
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+    // ✅ GET BY ID
+    public function getEmployeeById($id)
     {
-        //
+        $response = $this->employeeRepository->getEmployeeById($id);
+
+        return response()->json([
+            'success' => $response['success'],
+            'message' => $response['message'],
+            'output'  => $response['data'],
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+
+    // ✅ UPDATE
+    public function updateEmployee(Request $request, $id)
     {
-        //
+        try {
+
+            $data = $request->all();
+            $response = $this->employeeRepository->updateEmployee($id, $data);
+
+        } catch (\Exception $e) {
+
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+        }
+
+        return response()->json([
+            'success' => $response['success'],
+            'message' => $response['message'],
+            'output'  => $response['data'],
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    // ✅ DELETE
+    public function deleteEmployee($id)
     {
-        //
+        try {
+
+            $response = $this->employeeRepository->deleteEmployee($id);
+
+        } catch (\Exception $e) {
+
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+        }
+
+        return response()->json([
+            'success' => $response['success'],
+            'message' => $response['message'],
+            'output'  => $response['data'],
+        ], 200);
     }
 }
