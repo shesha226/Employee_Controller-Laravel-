@@ -136,4 +136,140 @@ class EmployeeController extends Controller
             'output'  => $response['data'],
         ], 200);
     }
+
+    public function createSalary(Request $request){
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'employee_id' => 'required|integer|min:1',
+                'basic_salary' => 'required|numeric|min:0',
+                'bonus' => 'required|numeric|min:0',
+                'deductions' => 'required|numeric|min:0',
+                'pay_date' => 'required|date',
+            ]);
+
+            if($validator->fails()){
+                $response = [
+                    'success' => false,
+                    'message' => "Validation failed.",
+                    'data'    => $validator->errors()->first(),
+                ];
+            }else{
+                $data = $request->all();
+                $out_data = $this->employeeRepository->createSalary($data);
+                $response = [
+                    'success' => $out_data['success'],
+                    'message' => $out_data['message'],
+                    'data'    => $out_data['data'],
+                ];
+            }
+            
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+            
+        }
+
+        return response()->json([
+            'success' => $response['success'],
+            'message' => $response['message'],
+            'output'  => $response['data'],
+        ], 200);
+    }
+
+    public function getAllsalary(){
+        try {
+            $response = $this->employeeRepository->getAllsalary();
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+            
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+        }
+    }
+
+    public function getSalaryById($id){
+        try {
+            $response = $this->employeeRepository->getSalaryById($id);
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+            
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+        }
+    }
+
+    public function updateSalary($id, Request $request){
+        try {
+            $data = $request->all();
+            $response = $this->employeeRepository->updateSalary($id, $data);
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+            
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+        }
+    }
+
+    public function deleteSalary($id){
+        try {
+            $response = $this->employeeRepository->deleteSalary($id);
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+            
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => 'Something went wrong. ' . $e->getMessage(),
+                'data'    => null,
+            ];
+            return response()->json([
+                'success' => $response['success'],
+                'message' => $response['message'],
+                'output'  => $response['data'],
+            ], 200);
+        }
+    }
 }

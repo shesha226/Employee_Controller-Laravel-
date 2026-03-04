@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Employee;
+use App\Modeles\Salary;
 use App\Repositories\Interface\EmployeeRepositoryInterface;
 
 class EmployeeRepository implements EmployeeRepositoryInterface
@@ -139,4 +140,140 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             'data'    => null,
         ];
     }
+
+    public function createSalary(array $data)
+    {
+        $employee_id = $data['employee_id'] ?? null;
+        $basic_salary = $data['basic_salary'] ?? null;
+        $bonus        = $data['bonus'] ?? 0;
+        $deductions   = $data['deductions'] ?? 0;
+        $pay_date     = $data['pay_date'] ?? now();
+
+        if(!$employee_id || !$basic_salary || !$bonus || !$deductions ){
+            return [
+            'success' => false,
+            'message' => 'All field Are required.',
+            'data'    => null,
+        ];
+        }
+
+        $employee= Employee::where('id', $employee_id)
+        ->where('status' , 'active')
+        ->first();
+
+        if (!$employee) {
+        return [
+            'success' => false,
+            'message' => 'Employee not found for salary.',
+            'data'    => null,
+        ];
+    }
+
+
+    if(!$basic_salary === null || !is_numeric($basic_salary) || $basic_salary<0){
+        return[
+            'success' => false,
+            'message' => 'Basic salary is required and must be a positive number.',
+            'data'    => null,
+        ];
+    }
+
+    $salary = Salary::create([
+        'employee_id' => $employee_id,
+        'basic_salary'=> $basic_salary,
+        'bonus'       => $bonus,
+        'deductions'  => $deductions,
+        'pay_date'    => $pay_date,
+    ]);
+
+  return [
+        'success' => true,
+        'message' => 'Salary created successfully.',
+        'data'    => ['salary_id' => $salary->id],
+    ];
 }
+
+public function getAllsalary(){
+    $employee = Employee::where('status', 'active')->get();
+
+    return [
+        'success' => true,
+        'message' => 'Employee list fetched successfully.',
+        'data'    => $employee,
+    ];
+}
+
+public function getSalaryById($id){
+    $salary = Salary::where('id', $id)
+    ->where('status', 'active')
+    ->first();
+
+    if(!$salary){
+        return [
+            'success' => false,
+            'message' => 'Salary not found.',
+            'data'    => null,
+        ];
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Salary fetched successfully.',
+        'data'    => $salary,
+    ];
+    
+}
+
+public function updateSalary($id, array $data){
+    $salary = Salary::where('id', $id)
+    ->where('status', 'active')
+    ->first();
+
+    if(!$salary){
+        return [
+            'success' => false,
+            'message' => 'Salary not found.',
+            'data'    => null,
+        ];
+    }
+
+    $salary->update($data);
+
+    return [
+        'success' => true,
+        'message' => 'Salary updated successfully.',
+        'data'    => null,
+    ];
+    
+}
+
+public function deleteSalary($id){
+    $salary = Salary::where('id', $id)
+    ->where('status', 'active')
+    ->first();
+
+    if(!$salary){
+        return [
+            'success' => false,
+            'message' => 'Salary not found.',
+            'data'    => null,
+        ];
+    }
+
+    $salary->update(['status' => 'inactive']);
+
+    return [
+        'success' => true,
+        'message' => 'Salary deleted successfully.',
+        'data'    => null,
+    ];
+    
+}
+
+
+
+
+}
+
+
+
