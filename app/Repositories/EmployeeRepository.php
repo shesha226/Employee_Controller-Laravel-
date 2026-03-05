@@ -3,13 +3,15 @@
 namespace App\Repositories;
 
 use App\Models\Employee;
-use App\Modeles\Salary;
-use App\Repositories\Interface\EmployeeRepositoryInterface;
+use App\Models\Attendance;
+use App\Models\Salary;
+use App\Models\Leave;
+use App\Repositories\Interfaces\EmployeeRepositoryInterface; 
 
 class EmployeeRepository implements EmployeeRepositoryInterface
 {
     // ✅ CREATE
-    public function createEmployee(array $data)
+    public function createEmployee(array $data) 
     {
         $name = $data['name'] ?? null;
         $email = $data['email'] ?? null;
@@ -55,7 +57,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return [
             'success' => true,
             'message' => 'Employee created successfully.',
-            'data'    => ['employee_id' => $employee->id],
+            'data'    => [ $employee],
         ];
     }
 
@@ -113,7 +115,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return [
             'success' => true,
             'message' => 'Employee updated successfully.',
-            'data'    => null,
+            'data'    => $employee,
         ];
     }
 
@@ -189,24 +191,22 @@ class EmployeeRepository implements EmployeeRepositoryInterface
   return [
         'success' => true,
         'message' => 'Salary created successfully.',
-        'data'    => ['salary_id' => $salary->id],
+        'data'    => [$salary],
     ];
 }
 
-public function getAllsalary(){
-    $employee = Employee::where('status', 'active')->get();
+public function getAllSalaries()
+    {
+        $salaries = Salary::all(); 
 
-    return [
-        'success' => true,
-        'message' => 'Employee list fetched successfully.',
-        'data'    => $employee,
-    ];
-}
-
+        return [
+            'success' => true,
+            'message' => 'Salary list fetched successfully.',
+            'data'    => $salaries,
+        ];
+    }
 public function getSalaryById($id){
-    $salary = Salary::where('id', $id)
-    ->where('status', 'active')
-    ->first();
+    $salary = Salary::where('id', $id)->first();
 
     if(!$salary){
         return [
@@ -226,7 +226,7 @@ public function getSalaryById($id){
 
 public function updateSalary($id, array $data){
     $salary = Salary::where('id', $id)
-    ->where('status', 'active')
+   
     ->first();
 
     if(!$salary){
@@ -242,21 +242,21 @@ public function updateSalary($id, array $data){
     return [
         'success' => true,
         'message' => 'Salary updated successfully.',
-        'data'    => null,
+        'data'    => $salary,
     ];
     
 }
 
 public function deleteSalary($id){
     $salary = Salary::where('id', $id)
-    ->where('status', 'active')
+    
     ->first();
 
     if(!$salary){
         return [
             'success' => false,
             'message' => 'Salary not found.',
-            'data'    => null,
+            'data'    => $salary,
         ];
     }
 
@@ -265,13 +265,218 @@ public function deleteSalary($id){
     return [
         'success' => true,
         'message' => 'Salary deleted successfully.',
-        'data'    => null,
+        'data'    => $salary,
     ];
     
 }
 
+public function createAttendance(array $data){
 
+    $employee_id = $data['employee_id'] ?? null;
+    $check_in = $data['check_in'] ?? null;
+    $check_out = $data['check_out'] ?? null;
+    $date = $data['date'] ?? null;
 
+    if(!$employee_id || !$check_in || !$check_out || !$date){
+        return [
+            'success' => false,
+            'message' => 'All field Are required.',
+            'data'    => null,
+        ];
+    }
+
+    $attendance = Attendance::create([
+        'employee_id' => $employee_id,
+        'check_in'    => $check_in,
+        'check_out'   => $check_out,
+        'date'        => $date,
+    ]);
+
+    return [
+        'success' => true,
+        'message' => 'Attendance created successfully.',
+        'data'    => [$attendance],
+    ];    
+}
+
+public function getAllAttendances(){
+
+    $attendances = Attendance::all();
+
+    return [
+        'success' => true,
+        'message' => 'Attendance list fetched successfully.',
+        'data'    => $attendances,
+    ];
+    
+}
+
+public function getAttendanceById($id){
+    $attendance = Attendance::where('id', $id)->first();
+
+    if(!$attendance){
+        return [
+            'success' => false,
+            'message' => 'Attendance not found.',
+            'data'    => null,
+        ];
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Attendance fetched successfully.',
+        'data'    => $attendance,
+    ];
+    
+}
+
+public function updateAttendance($id, array $data){
+
+    $attendance = Attendance::where('id', $id)->first();
+
+    if(!$attendance){
+        return [
+            'success' => false,
+            'message' => 'Attendance not found.',
+            'data'    => null,
+        ];
+    }
+
+    $attendance->update($data);
+
+    return [
+        'success' => true,
+        'message' => 'Attendance updated successfully.',
+        'data'    => $attendance,
+    ];
+    
+}
+
+public function deleteAttendance($id){
+
+    $attendance = Attendance::where('id', $id)->first();
+
+    if(!$attendance){
+        return [
+            'success' => false,
+            'message' => 'Attendance not found.',
+            'data'    => null,
+        ];
+    }
+
+    $attendance->update(['status' => 'inactive']);
+
+    return [
+        'success' => true,
+        'message' => 'Attendance deleted successfully.',
+        'data'    => $attendance,
+    ];
+    
+}
+
+public function ApplyLeave(array $data){
+    
+    $employee_id = $data['employee_id'] ?? null;
+    $leave_date = $data['leave_date'] ?? null;
+    $leave_type = $data['leave_type'] ?? null;
+    $status = $data['status'] ?? 'pending';
+
+    if(!$employee_id || !$leave_date || !$leave_type){
+        return [
+            'success' => false,
+            'message' => 'All field Are required.',
+            'data'    => null,
+        ];
+    }
+
+    $leave = Leave::create([
+        'employee_id' => $employee_id,
+        'leave_date' => $leave_date,
+        'leave_type' => $leave_type,
+        'status' => $status,
+    ]);
+
+    return [
+        'success' => true,
+        'message' => 'Leave applied successfully.',
+        'data'    => [$leave],
+    ];    
+}
+
+public function getAllLeaves(){
+
+    $leaves = Leave::all();
+
+    return [
+        'success' => true,
+        'message' => 'Leave list fetched successfully.',
+        'data'    => $leaves,
+    ];
+    
+}
+
+public function getLeaveById($id){
+    $leave = Leave::where('id', $id)->first();
+
+    if(!$leave){
+        return [
+            'success' => false,
+            'message' => 'Leave not found.',
+            'data'    => null,
+        ];
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Leave fetched successfully.',
+        'data'    => $leave,
+    ];
+    
+}
+
+public function updateLeave($id, array $data){
+
+    $leave = Leave::where('id', $id)->first();
+
+    if(!$leave){
+        return [
+            'success' => false,
+            'message' => 'Leave not found.',
+            'data'    => null,
+        ];
+    }
+
+    $leave->update($data);
+
+    return [
+        'success' => true,
+        'message' => 'Leave updated successfully.',
+        'data'    => $leave,
+    ];
+    
+}
+
+public function deleteLeave($id){
+
+    $leave = Leave::where('id', $id)->first();
+
+    if(!$leave){
+        return [
+            'success' => false,
+            'message' => 'Leave not found.',
+            'data'    => null,
+        ];
+    }
+
+    $leave->update(['status' => 'inactive']);
+
+    return [
+        'success' => true,
+        'message' => 'Leave deleted successfully.',
+        'data'    => $leave,
+    ];
+    
+}
 
 }
 
